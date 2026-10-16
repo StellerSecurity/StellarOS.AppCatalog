@@ -1,9 +1,8 @@
 # Signing a release
 
-This guide describes the implemented **two-of-three Ed25519 signing profile**.
+This guide describes the **two-of-three Ed25519 signing profile**.
 Three independent custodians hold one key each; any two approve each metadata role.
-It does not describe a single-key mode. Keeping all three keys on one computer or
-one drive does not provide independent custody.
+Keep each custodian’s key under separate custody.
 
 Commands run from the repository root on Linux x86-64 with Python 3.12. Paths such
 as `/media/USER/SIGNING` and `/opt/android-build-tools` are examples: replace them
@@ -79,9 +78,8 @@ which key belongs to each custodian.
 An encrypted USB drive can protect the key file while locked. During signing, this
 CLI reads and decrypts the file in the computer's memory. Unlocking such a drive on
 a compromised computer can expose the key. Lock and disconnect it after use.
-Hardware tokens that sign internally require a different integration; this CLI does
-not currently support YubiKey, PIV or PKCS#11 signing. Neither storage encryption nor
-a token replaces reviewing the content being signed.
+The commands in this guide use encrypted Ed25519 key files. Review the content being
+signed independently of how the key is stored.
 
 ## 4. Establish the trusted root
 
@@ -200,6 +198,6 @@ versions for targets, snapshot and timestamp even if APKs are unchanged. Never e
 signed files: later roles authenticate their exact bytes. Expired metadata must cause
 a client error, not an unsigned fallback.
 
-This CLI initializes root version 1 only. Do not re-run `init-root` as a rotation or
-recovery procedure for an established catalog. Root rotation and loss/compromise
-recovery need a reviewed implementation and rehearsal before production use.
+Use `init-root` only to establish the initial version-1 root. For an established
+catalog, follow a separately reviewed TUF root-rotation and recovery procedure;
+never replace the existing trust anchor with a newly initialized root.
