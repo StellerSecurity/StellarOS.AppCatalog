@@ -1,0 +1,69 @@
+{
+  "apps": [
+    {
+      "packageName": "com.whatsapp",
+      "source": {
+        "type": "direct",
+        "url": "https://www.whatsapp.com/android/current/WhatsApp.apk"
+      }
+    },
+    {
+      "packageName": "org.thoughtcrime.securesms",
+      "source": {
+        "type": "signal"
+      }
+    },
+    {
+      "packageName": "im.molly.app",
+      "source": {
+        "type": "github",
+        "repo": "mollyim/mollyim-android",
+        "assetRegex": "Molly-.*\\.apk"
+      }
+    },
+    {
+      "packageName": "network.loki.messenger",
+      "source": {
+        "type": "github",
+        "repo": "session-foundation/session-android",
+        "assetRegex": ".*-universal-play-release\\.apk"
+      }
+    },
+    {
+      "packageName": "chat.simplex.app",
+      "source": {
+        "type": "github",
+        "repo": "simplex-chat/simplex-chat",
+        "assetRegex": "simplex\\.apk"
+      }
+    },
+    {
+      "packageName": "org.fdroid.basic",
+      "source": {
+        "type": "fdroid",
+        "packageName": "org.fdroid.basic"
+      }
+    },
+    {
+      "packageName": "ch.threema.app.libre",
+      "source": {
+        "type": "fdroid",
+        "packageName": "ch.threema.app.libre"
+      }
+    },
+    {
+      "packageName": "org.briarproject.briar.android",
+      "source": {
+        "type": "fdroid",
+        "packageName": "org.briarproject.briar.android"
+      }
+    },
+    {
+      "packageName": "com.aurora.store",
+      "source": {
+        "type": "izzy",
+        "packageName": "com.aurora.store"
+      }
+    }
+  ]
+}

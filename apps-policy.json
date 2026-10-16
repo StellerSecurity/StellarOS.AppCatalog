@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "apps": [
+    {
+      "packageName": "com.whatsapp",
+      "minimumVersionCode": 264107133,
+      "signerSha256": [
+        "fb920d381bee1b2093f27dc8f13d994da629dc91887d0529b35c9a2dc4f4a6c2"
+      ]
+    },
+    {
+      "packageName": "org.thoughtcrime.securesms",
+      "minimumVersionCode": 1,
+      "signerSha256": [
+        "4be4f6cd5be844083e900279dc822af65a547fecc26aba7ff1f5203a45518cd8",
+        "29f34e5f27f211b424bc5bf9d67162c0eafba2da35af35c16416fc446276ba26"
+      ]
+    },
+    {
+      "packageName": "im.molly.app",
+      "minimumVersionCode": 1,
+      "signerSha256": [
+        "6aa80fdf4a8cc13737cfb434fc0cde486f09cf8fcda21a67bea5ee1ca2700886"
+      ]
+    },
+    {
+      "packageName": "network.loki.messenger",
+      "minimumVersionCode": 1,
+      "signerSha256": [
+        "f2a0ecf70686447d1d6c6cbbf58c42890500ccf41af372ae2099303980824edd"
+      ]
+    },
+    {
+      "packageName": "chat.simplex.app",
+      "minimumVersionCode": 1,
+      "signerSha256": [
+        "3c52c4fd3cad1c07c9b00a7080e358fab9fefcb8af5aec147765f16d0f21ad85"
+      ]
+    },
+    {
+      "packageName": "org.fdroid.basic",
+      "minimumVersionCode": 1,
+      "signerSha256": [
+        "ef7f822b7653e2011cb8c5a7fc99e8d2ade1717e539ca56d6456295e3bc07312"
+      ]
+    },
+    {
+      "packageName": "com.aurora.store",
+      "minimumVersionCode": 1,
+      "signerSha256": [
+        "4c626157ad02bda3401a7263555f68a79663fc3e13a4d4369a12570941aa280f"
+      ]
+    },
+    {
+      "packageName": "ch.threema.app.libre",
+      "minimumVersionCode": 1,
+      "signerSha256": [
+        "0508b53ff102b538919c834e9e6b6afba046edf67e17ca4d1ce7a4b9c3823741"
+      ]
+    },
+    {
+      "packageName": "org.briarproject.briar.android",
+      "minimumVersionCode": 1,
+      "signerSha256": [
+        "501ddf14a6ecf904fb20285c56a565cb987a867f91572ee33c2d43771cca4e37"
+      ]
+    }
+  ]
+}
