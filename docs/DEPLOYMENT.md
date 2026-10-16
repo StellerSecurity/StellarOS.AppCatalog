@@ -1,54 +1,65 @@
-# Azure and Android deployment
+# Publishing and client integration
 
-## Azure
+## Catalog hosting
 
-Use an existing HTTPS Azure Blob Storage endpoint/container. A public read endpoint
-serves metadata and APKs; upload access is separate. No web-service code or online
-signing service is needed. Confirm the Azure account/container and APK redistribution
-rights before provisioning or upload.
+The catalog endpoint is
+[stellarosappcatalog.stellarsecurity.com](https://stellarosappcatalog.stellarsecurity.com).
+It uses Azure Static Web Apps Free with a custom HTTPS domain. Hosting is provisioned;
+a signed production catalog and automated publication are not deployed yet.
 
-Configure GitHub-to-Azure OIDC constrained to this repository's protected production
-environment. Grant only blob publication permissions scoped to the container, not
-subscription owner or signing permissions. Require approval for that environment.
-Protect workflow/source changes and the independently reviewed `ROOT_SHA256` variable.
+The planned static site contains signed metadata and the catalog. APK artifacts need
+a separate configured HTTPS origin, with immutable paths matching the signed target
+hashes. The split-origin deployment and client behavior still require integration
+testing. Confirm redistribution rights before mirroring third-party APKs.
 
-Publication is intentionally not wired to Actions yet: destination and offline root
-have not been supplied. From a trusted publisher with Azure CLI authenticated:
+No private signing keys belong in Azure or GitHub. Deployment credentials must only
+permit publishing approved public files. Independently pin the trusted root, verify
+all signatures and artifact hashes before deployment, and preserve previous immutable
+objects for clients already downloading a release. Publish the timestamp only after
+its referenced metadata and artifacts are available.
 
-```sh
+## Available Blob publisher
+
+`catalog.publish` publishes a complete signed repository to an existing Azure Blob
+container. It is an alternative publisher, **not a Static Web Apps deployment tool**.
+Use it only after configuring and testing the intended destination. It does not
+create infrastructure or sign releases.
+
+With Azure CLI authenticated and the reviewed root stored at `trust/root.json`:
+
+```bash
 export ROOT_SHA256='<independently verified SHA-256 of trust/root.json>'
-python -m catalog.publish --root trust/root.json --metadata release/metadata \
-  --candidate release/candidate --account ACCOUNT --container CONTAINER
+.venv/bin/python -m catalog.publish \
+  --root trust/root.json --metadata metadata --candidate candidate \
+  --account ACCOUNT --container CONTAINER
 ```
 
-Publisher verifies the root pin, signature thresholds, expiry, metadata chain and
-all artifact hashes. It checks increasing metadata versions against an existing
-release, refuses immutable object replacement, uploads targets/versioned metadata
-first and publishes timestamp last with an ETag condition. A failed/interrupted upload
-before timestamp does not advertise the incomplete release. Retain old immutable
-objects for clients midway through updates.
+Replace the hash, account and container placeholders. Grant the publisher only the
+necessary container-scoped permissions. For CI, use repository/environment-scoped
+OIDC, protected workflow changes and production approval rather than stored account
+keys. Signing remains offline.
 
-An expired previous timestamp can be replaced only by a fresh, correctly signed release
-with increasing versions; the old signatures still anchor the version floor. Azure
-deployment and concurrency behavior need an integration test against the chosen staging
-container before production.
+The publisher validates the root pin, signature thresholds, expiry and target bytes.
+It rejects non-increasing release versions and changes to existing immutable objects,
+then commits the timestamp last using an ETag condition. An expired previous timestamp
+can be superseded by a fresh signed release, but its authenticated version floor is
+still enforced. Cloud deployment and concurrency behavior require a staging test.
 
-## Android activation gate
+## Android activation requirements
 
-The phone is not switched to this catalog by these tools. Before activating Lupin:
+These tools do not enable TUF verification in Lupin. Before activation:
 
-1. Integrate a maintained TUF client compatible with Android/AOSP, or separately review
-   and test a minimal client implementation against TUF conformance fixtures.
-2. Ship the approved public root and minimum metadata versions in the OS, never test keys.
-3. Persist trusted metadata atomically in app-private storage; enforce expiration,
-   rollback protection, sequential root rotation and bounded downloads.
-4. Verify catalog target, then the selected APK's exact hash/length, then independent
-   OS-pinned APK signer/package identity and installed/minimum version before install.
-5. Invalid/expired/unreachable metadata must not fall back to unsigned live discovery.
-   Show a retryable installation error. Existing apps remain usable.
-6. Qualify clock handling, factory-reset baseline, interrupted updates, bad signatures,
-   key rotation, downgrade, cache replay and cross-profile installation on a real phone.
+1. Integrate and test an Android-compatible TUF client.
+2. Embed the independently approved public root and minimum metadata versions in the OS.
+3. Persist trusted metadata atomically; enforce expiration, rollback protection,
+   sequential root rotation and bounded downloads.
+4. Verify the catalog, APK SHA-256 and length, then independently pinned APK signer,
+   package identity and installed/minimum version before installation.
+5. Fail closed on invalid, expired or unreachable metadata with a retryable error.
+   Never fall back to unsigned discovery; existing installed apps remain usable.
+6. Test clock handling, factory-reset trust baselines, interrupted downloads,
+   signature failures, rotation, replay, downgrade and cross-profile installation.
 
-The `catalog.client_check` reference uses the official Python TUF client. It verifies
-catalog and target metadata and preserves trust state, but does not install APKs and
-is not the Android implementation.
+`catalog.client_check` is a Python reference verifier using the official TUF client.
+It preserves trust state and checks catalog entries against signed target metadata.
+It neither installs APKs nor replaces the Android implementation.
