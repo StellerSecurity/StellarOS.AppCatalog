@@ -12,15 +12,34 @@ import shutil
 import subprocess
 
 
+def applicable_signers(output, allowed):
+    """Require exactly one pinned signer throughout the verified SDK range."""
+    count = re.findall(r'^Number of signers: (\d+)$', output, re.M)
+    if count != ['1']:
+        raise ValueError('Expected exactly one APK signer')
+    plain = re.findall(r'^Signer #\d+ certificate SHA-256 digest: ([0-9a-fA-F]{64})$', output, re.M)
+    ranged = re.findall(
+        r'^Signer \(minSdkVersion=(\d+), maxSdkVersion=(\d+)\) certificate SHA-256 digest: ([0-9a-fA-F]{64})$',
+        output, re.M)
+    if plain and ranged:
+        raise ValueError('Ambiguous APK signer output')
+    selected = set()
+    for sdk in range(33, 37):
+        matches = plain if plain else [digest for lo, hi, digest in ranged if int(lo) <= sdk <= int(hi)]
+        if len(matches) != 1 or matches[0].lower() not in allowed:
+            raise ValueError('Unexpected APK signer for SDK ' + str(sdk))
+        selected.add(matches[0].lower())
+    # Android installer policy currently permits a single current certificate.
+    if len(selected) != 1:
+        raise ValueError('Signer differs across supported SDK versions')
+    return sorted(selected)
+
+
 def inspect_apk(apk, policy, apksigner, aapt2):
     result = subprocess.run([apksigner, 'verify', '--verbose', '--print-certs',
                              '--min-sdk-version', '33', '--max-sdk-version', '36', str(apk)],
                             capture_output=True, text=True, check=True, timeout=120)
-    signers = re.findall(r'^Signer #\d+ certificate SHA-256 digest: ([0-9a-fA-F]{64})$', result.stdout, re.M)
-    signers = [s.lower() for s in signers]
-    # Multiple signers are deliberately rejected by this initial catalog profile.
-    if len(signers) != 1 or signers[0] not in policy['signerSha256']:
-        raise ValueError('Unexpected APK signer: ' + policy['packageName'])
+    signers = applicable_signers(result.stdout, policy['signerSha256'])
     result = subprocess.run([aapt2, 'dump', 'badging', str(apk)], capture_output=True,
                             text=True, check=True, timeout=120)
     match = re.search(r"^package: name='([^']+)' versionCode='(\d+)'", result.stdout, re.M)
