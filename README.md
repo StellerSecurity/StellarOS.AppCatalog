@@ -1,63 +1,63 @@
-# StellarOS.AppCatalog
+# StellarOS App Catalog
 
-Offline-signed application catalog for StellarOS Lupin. GitHub prepares candidates;
-Azure Blob Storage serves approved files. Neither service holds signing keys.
+Release tooling for the application catalog used by StellarOS's Lupin installer.
+It prepares APK candidates, records their hashes and identities, and produces
+metadata signed by offline release maintainers using The Update Framework (TUF).
 
-**Status: release tooling and reference-client tests. Not activated in Lupin.**
-Production root keys, Azure destination and Android TUF client integration are still
-required. There is deliberately no bundled production root or unsigned fallback.
+**Development status:** signing and verification tooling is available. Production
+signing keys and the Android TUF integration are not configured, and no signed
+production catalog has been published. The HTTPS catalog host is provisioned at
+[stellarosappcatalog.stellarsecurity.com](https://stellarosappcatalog.stellarsecurity.com).
 
-## Trust model
+## Documentation
 
-- Standard TUF root, targets, snapshot and timestamp metadata, using python-tuf.
-- Three independently held offline Ed25519 keys; two signatures required for every
-  role in this initial small-team profile. Losing one key is insufficient to sign.
-- All roles are offline-signed, including timestamp. Default lifetimes: root 365 days,
-  targets/snapshot 30 days, timestamp 7 days. Renew before expiry; no online signer.
-- The signed catalog identifies package name, actual APK version, length, complete
-  APK SHA-256, signer fingerprints and immutable content-addressed target path.
-- Each offline targets signer re-inspects APK signatures with Android apksigner and
-  package/version with aapt2 before signing. Review tools and policy independently.
-- Android must keep its own certificate pins: catalog metadata cannot replace them.
-- GitHub Actions only tests and prepares unsigned candidates. It cannot sign.
+- [Signing a release](docs/OFFLINE-RELEASE.md): prerequisites, key creation, signatures and renewal.
+- [Publishing and client integration](docs/DEPLOYMENT.md): hosting layout and activation requirements.
 
-Read [the offline release procedure](docs/OFFLINE-RELEASE.md) and
-[Azure publishing and Android activation](docs/DEPLOYMENT.md).
+## How it works
+
+1. Fetch unsigned candidates from the configured upstream release channels.
+2. Inspect each APK's package, version and signing certificate; calculate its exact SHA-256 and length.
+3. Have two independent maintainers review and sign the release offline.
+4. Publish approved metadata and immutable artifacts. Clients must verify the metadata,
+   APK bytes and independently pinned APK signing certificates before installation.
+
+The current signing profile uses three Ed25519 keys and requires two signatures
+for each TUF role. GitHub Actions prepares candidates and runs tests; it does not
+hold signing keys or approve releases. A valid signature authenticates a release,
+not whether an application is free of malicious behavior.
+
+## Configured applications
+
+WhatsApp, Signal, Molly, Session, SimpleX, F-Droid Basic, Aurora Store, Threema Libre
+and Briar. Release sources are defined in `sources.json`; package identities,
+minimum versions and allowed APK signing certificates are in `apps-policy.json`.
+These policies require independent review before production use. Upstream updates
+become candidates, not automatically approved releases.
 
 ## Development
 
-Python 3.12, Linux x86-64:
+The dependency lock targets Python 3.12 on Linux x86-64. On Ubuntu 24.04, install
+the prerequisites before creating the environment:
 
-```sh
-python3 -m venv .venv
-. .venv/bin/activate
-pip install --require-hashes -r requirements.lock
-python -m unittest discover -s tests -v
+```bash
+sudo apt update && sudo apt install python3.12-venv git
+git clone https://github.com/StellerSecurity/StellarOS.AppCatalog.git
+cd StellarOS.AppCatalog
+python3.12 -m venv .venv &&
+.venv/bin/python -m pip install --require-hashes -r requirements.lock
+.venv/bin/python -m unittest discover -s tests -v
 ```
 
-The lock file pins the Linux/Python 3.12 wheels used for CI and the offline signing
-kit. Re-lock deliberately for another platform. Test keys exist only in temporary
-memory/directories and are not production keys.
+Tests use temporary test keys. Never use those keys for production, commit private
+keys or APK binaries, or put signing passwords in scripts or GitHub secrets.
 
-Nine configured channels: WhatsApp, Signal, Molly, Session, SimpleX, F-Droid Basic,
-Aurora, Threema Libre and Briar. Source discovery is untrusted; certificate/package
-checks follow. Pins were imported from the current Lupin allowlist and still need
-an independent release review. Android signature validity is not a malware audit.
+## Current boundaries
 
-APK artifacts are not committed to Git. Confirm redistribution permission before
-mirroring an app to Azure. Mutable upstream `latest` URLs are only used for discovery;
-phones must fetch the immutable bytes approved in the signed release.
-
-## Limitations before production
-
-- No production key ceremony has taken place.
-- No cloud resources have been provisioned or published.
-- Lupin's current device build is not yet a TUF client.
-- Root rotation is supported by TUF but the release CLI currently initializes only
-  root version 1. A reviewed rotation command and recovery rehearsal are required
-  before production activation.
-- Offline signing does not prove a candidate is benign. Two independent custodians
-  must check upstream provenance, signer pins, versions and changes.
-- A newly reset phone needs a trusted build-time metadata baseline and sufficiently
-  trustworthy time to limit replay/freeze attacks. Persisted client state protects
-  subsequent updates; it is not preserved by a factory reset.
+- The CLI supports encrypted Ed25519 key files; hardware-token signing is not implemented.
+- Root initialization supports version 1. A reviewed rotation/recovery procedure is
+  required before production activation.
+- All metadata roles are signed offline. The default timestamp expires after seven
+  days, so releases require regular renewal even when no apps change.
+- Android verification and deployment integration must be qualified before enabling
+  this catalog in Lupin. See the deployment guide for the acceptance criteria.
