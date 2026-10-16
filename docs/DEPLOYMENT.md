@@ -4,13 +4,12 @@
 
 The catalog endpoint is
 [stellarosappcatalog.stellarsecurity.com](https://stellarosappcatalog.stellarsecurity.com).
-It uses Azure Static Web Apps Free with a custom HTTPS domain. Hosting is provisioned;
-a signed production catalog and automated publication are not deployed yet.
+The hosting configuration uses Azure Static Web Apps Free with a custom HTTPS domain.
 
-The planned static site contains signed metadata and the catalog. APK artifacts need
-a separate configured HTTPS origin, with immutable paths matching the signed target
-hashes. The split-origin deployment and client behavior still require integration
-testing. Confirm redistribution rights before mirroring third-party APKs.
+Serve signed metadata and the catalog from the static site. Configure a separate
+HTTPS origin for APK artifacts, using immutable paths matching the signed target
+hashes. Verify the complete download flow and redistribution rights before mirroring
+third-party APKs.
 
 No private signing keys belong in Azure or GitHub. Deployment credentials must only
 permit publishing approved public files. Independently pin the trusted root, verify
@@ -18,12 +17,11 @@ all signatures and artifact hashes before deployment, and preserve previous immu
 objects for clients already downloading a release. Publish the timestamp only after
 its referenced metadata and artifacts are available.
 
-## Available Blob publisher
+## Azure Blob publication
 
 `catalog.publish` publishes a complete signed repository to an existing Azure Blob
-container. It is an alternative publisher, **not a Static Web Apps deployment tool**.
-Use it only after configuring and testing the intended destination. It does not
-create infrastructure or sign releases.
+container. Configure and test the destination first, and provide an already signed
+release. This command targets Azure Blob Storage.
 
 With Azure CLI authenticated and the reviewed root stored at `trust/root.json`:
 
@@ -45,11 +43,11 @@ then commits the timestamp last using an ETag condition. An expired previous tim
 can be superseded by a fresh signed release, but its authenticated version floor is
 still enforced. Cloud deployment and concurrency behavior require a staging test.
 
-## Android activation requirements
+## Client verification
 
-These tools do not enable TUF verification in Lupin. Before activation:
+Configure clients to enforce the following rules:
 
-1. Integrate and test an Android-compatible TUF client.
+1. Use a tested Android-compatible TUF client.
 2. Embed the independently approved public root and minimum metadata versions in the OS.
 3. Persist trusted metadata atomically; enforce expiration, rollback protection,
    sequential root rotation and bounded downloads.
@@ -62,4 +60,4 @@ These tools do not enable TUF verification in Lupin. Before activation:
 
 `catalog.client_check` is a Python reference verifier using the official TUF client.
 It preserves trust state and checks catalog entries against signed target metadata.
-It neither installs APKs nor replaces the Android implementation.
+Use it to validate metadata independently of the Android installer.
