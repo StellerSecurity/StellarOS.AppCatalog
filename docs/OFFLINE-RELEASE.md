@@ -1,91 +1,205 @@
-# Offline release procedure
+# Signing a release
 
-Use a disconnected signing machine and reviewed tools. This repository's CLI never
-uses the network for key generation, signing or release assembly. That does not
-make an internet-connected host offline: disconnect it physically. Do not generate
-production keys on CI or the online build machine.
+This guide describes the implemented **two-of-three Ed25519 signing profile**.
+Three independent custodians hold one key each; any two approve each metadata role.
+It does not describe a single-key mode. Keeping all three keys on one computer or
+one drive does not provide independent custody.
 
-## Prepare the signing kit
+Commands run from the repository root on Linux x86-64 with Python 3.12. Paths such
+as `/media/USER/SIGNING` and `/opt/android-build-tools` are examples: replace them
+with verified locations. Stop on any command failure.
 
-On an online machine, download the pinned wheels:
+## 1. Prepare dependencies while online
 
-```sh
-pip download --require-hashes -r requirements.lock -d wheels
+On Ubuntu 24.04:
+
+```bash
+sudo apt update && sudo apt install python3.12-venv git
 ```
 
-Transfer reviewed source, requirements.lock, wheels, a pinned Android build-tools
-installation and the unsigned candidate via removable media. Install dependencies
-with `pip install --no-index --find-links wheels --require-hashes -r requirements.lock`.
-Only carry public keys, signatures and approved release files back online.
+From a reviewed checkout:
 
-## Initial root ceremony
-
-Each of three custodians independently runs on their own offline machine:
-
-```sh
-python -m catalog.release keygen --private /offline-storage/custodian.pem --public custodian-public.json
+```bash
+python3.12 -m venv .venv &&
+.venv/bin/python -m pip download --require-hashes -r requirements.lock -d wheels
 ```
 
-The CLI requires an encryption password and creates private files with mode 0600.
-Each custodian keeps their own private key and backup outside the repository.
-Exchange only the three public JSON files; confirm their fingerprints out of band.
+If Python reports `No module named pip` or `ensurepip is not available`, install
+`python3.12-venv` and recreate `.venv` before continuing. Use `.venv/bin/python -m pip`,
+not the system Python's pip.
 
-```sh
-python -m catalog.release init-root --public alice.json bob.json carol.json --output root.json
+Prepare each signing machine with Python 3.12 and venv support before disconnecting
+it. Transfer reviewed source, `requirements.lock`, `wheels/`, Android build-tools
+(`apksigner`, `aapt2` and their Java/runtime dependencies), and the release candidate
+using removable media. The wheel lock is platform-specific; other platforms require
+a separately reviewed lock.
+
+## 2. Install on the offline signing machine
+
+Disconnect the signing machine from all networks. From the transferred checkout:
+
+```bash
+python3.12 -m venv .venv &&
+.venv/bin/python -m pip install --no-index --find-links wheels \
+  --require-hashes -r requirements.lock
 ```
 
-At least two custodians review all keys, roles, thresholds, version and expiry and
-sign the **same** root file sequentially (the second signature is appended):
+The signing CLI performs no network requests, but that alone does not make its host
+offline. A temporarily disconnected everyday computer is not equivalent to a
+machine reserved for offline signing.
 
-```sh
-python -m catalog.release sign root.json --private /offline-storage/custodian.pem
+## 3. Create one key per custodian
+
+Each custodian independently sets a directory on their own offline storage:
+
+```bash
+umask 077
+SIGNING_DIR='/media/USER/SIGNING/catalog-keys'
 ```
 
-Publish only the completed root to `trust/root.json`. Record its file SHA-256 in the
-protected Azure publishing environment and embed the public root in the OS through
-an independently reviewed build. Do not bootstrap trust from the serving endpoint.
+Verify that the intended encrypted drive is actually mounted and unlocked before
+creating the directory. Do not use an example path unchanged or allow it to resolve
+to the computer's internal drive.
 
-## Prepare and approve a release
-
-The manual GitHub workflow prepares all nine candidate APKs. Its output is untrusted.
-Review against the last accepted release; never lower versions or accept changed APK
-bytes at the same version. To repeat inspection locally, use `catalog.candidate`
-with `--previous` pointing to the previously verified catalog.
-
-1. Assemble targets metadata:
-
-```sh
-python -m catalog.release prepare-targets --candidate candidate --version 1 --output metadata/targets.json
+```bash
+mkdir -p "$SIGNING_DIR" &&
+.venv/bin/python -m catalog.release keygen \
+  --private "$SIGNING_DIR/catalog-key.pem" \
+  --public custodian-public.json
 ```
 
-2. Each of two offline custodians inspects and signs targets. The command independently
-   parses the actual APKs and validates their signatures against local policy:
+The command prompts twice for a password of at least 16 characters and refuses to
+overwrite existing key files. Keep the private key and its secure backup outside
+Git, cloud storage and CI. Store the password separately. Exchange only public JSON
+files, named `alice.json`, `bob.json` and `carol.json`, and independently confirm
+which key belongs to each custodian.
 
-```sh
-python -m catalog.release sign metadata/targets.json --private /offline-storage/custodian.pem \
-  --candidate candidate --policy apps-policy.json --apksigner /tools/apksigner --aapt2 /tools/aapt2
+### Encrypted drives and hardware tokens
+
+An encrypted USB drive can protect the key file while locked. During signing, this
+CLI reads and decrypts the file in the computer's memory. Unlocking such a drive on
+a compromised computer can expose the key. Lock and disconnect it after use.
+Hardware tokens that sign internally require a different integration; this CLI does
+not currently support YubiKey, PIV or PKCS#11 signing. Neither storage encryption nor
+a token replaces reviewing the content being signed.
+
+## 4. Establish the trusted root
+
+On an offline machine, assemble the three reviewed public keys:
+
+```bash
+.venv/bin/python -m catalog.release init-root \
+  --public alice.json bob.json carol.json --output root.json
 ```
 
-3. After both targets signatures, prepare snapshot, then obtain two signatures:
+Two custodians review the keys, role thresholds, version and expiry. Each runs the
+following on their own machine, passing the **same root file sequentially** between
+them. The second signature is appended; do not create separate root files.
 
-```sh
-python -m catalog.release prepare-snapshot --root root.json --input metadata/targets.json --version 1 --output metadata/snapshot.json
-python -m catalog.release sign metadata/snapshot.json --private /offline-storage/custodian.pem
+```bash
+.venv/bin/python -m catalog.release sign root.json \
+  --private "$SIGNING_DIR/catalog-key.pem"
 ```
 
-4. After both snapshot signatures, prepare timestamp, then obtain two signatures:
+After both signatures:
 
-```sh
-python -m catalog.release prepare-timestamp --root root.json --input metadata/snapshot.json --version 1 --output metadata/timestamp.json
-python -m catalog.release sign metadata/timestamp.json --private /offline-storage/custodian.pem
+```bash
+sha256sum root.json
 ```
 
-5. Verify the complete release:
+Record that exact file hash through an independent trusted channel. Only the public,
+signed root goes into `trust/root.json` and the reviewed OS build. A hash obtained
+from the same untrusted download as the root is not an independent trust anchor.
 
-```sh
-python -m catalog.release verify --root root.json --metadata metadata --candidate candidate
+## 5. Review the unsigned candidate
+
+The manual GitHub Actions candidate workflow produces untrusted APKs and metadata.
+Review their upstream provenance, package identities, signer pins and versions.
+On releases after the first, compare against the last accepted catalog using
+`catalog.candidate --previous`; do not accept lower versions or changed bytes at the
+same version. Do not change signer policy merely to make a failed check pass.
+
+The following steps expect `candidate/catalog.json` and its APK target files,
+`root.json`, `apps-policy.json`, and the reviewed Android tools. Each signer sets:
+
+```bash
+APKSIGNER='/opt/android-build-tools/apksigner'
+AAPT2='/opt/android-build-tools/aapt2'
 ```
 
-Use increasing versions on every renewal, including releases with unchanged APKs.
-Never edit metadata after signing: downstream metadata hashes cover the signed files.
-No server-side expiry extension is possible without the offline signatures.
+## 6. Sign the metadata in order
+
+These are **first-release** commands. Use higher version numbers for subsequent
+releases and renewals. Prepare each role once, then obtain both signatures before
+preparing the next role. Re-running preparation replaces that role's signatures.
+
+Prepare targets:
+
+```bash
+.venv/bin/python -m catalog.release prepare-targets \
+  --candidate candidate --version 1 --output metadata/targets.json
+```
+
+Each of two custodians runs this on the same targets file, sequentially. The command
+re-inspects the actual APKs against the local policy before signing:
+
+```bash
+.venv/bin/python -m catalog.release sign metadata/targets.json \
+  --private "$SIGNING_DIR/catalog-key.pem" --candidate candidate \
+  --policy apps-policy.json --apksigner "$APKSIGNER" --aapt2 "$AAPT2"
+```
+
+After both targets signatures, prepare snapshot:
+
+```bash
+.venv/bin/python -m catalog.release prepare-snapshot \
+  --root root.json --input metadata/targets.json \
+  --version 1 --output metadata/snapshot.json
+```
+
+Each of two custodians signs the same snapshot sequentially:
+
+```bash
+.venv/bin/python -m catalog.release sign metadata/snapshot.json \
+  --private "$SIGNING_DIR/catalog-key.pem"
+```
+
+After both snapshot signatures, prepare timestamp:
+
+```bash
+.venv/bin/python -m catalog.release prepare-timestamp \
+  --root root.json --input metadata/snapshot.json \
+  --version 1 --output metadata/timestamp.json
+```
+
+Each of two custodians signs the same timestamp sequentially:
+
+```bash
+.venv/bin/python -m catalog.release sign metadata/timestamp.json \
+  --private "$SIGNING_DIR/catalog-key.pem"
+```
+
+## 7. Verify and export
+
+```bash
+.venv/bin/python -m catalog.release verify \
+  --root root.json --metadata metadata --candidate candidate &&
+.venv/bin/python -m catalog.release export \
+  --root root.json --metadata metadata --candidate candidate --output dist/release-1
+```
+
+The output directory must not already exist. Verification checks signature thresholds,
+expiry, metadata links and all target bytes. Copy only approved public release files
+back online for [publication](DEPLOYMENT.md). Never transfer private keys with them.
+
+## Renewal and recovery
+
+Default lifetimes are 365 days for root, 30 days for targets/snapshot, and seven days
+for timestamp. Renew before the earliest expiry, repeating steps 6–7 with increasing
+versions for targets, snapshot and timestamp even if APKs are unchanged. Never edit
+signed files: later roles authenticate their exact bytes. Expired metadata must cause
+a client error, not an unsigned fallback.
+
+This CLI initializes root version 1 only. Do not re-run `init-root` as a rotation or
+recovery procedure for an established catalog. Root rotation and loss/compromise
+recovery need a reviewed implementation and rehearsal before production use.
