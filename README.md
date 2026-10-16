@@ -4,15 +4,12 @@ Release tooling for the application catalog used by StellarOS's Lupin installer.
 It prepares APK candidates, records their hashes and identities, and produces
 metadata signed by offline release maintainers using The Update Framework (TUF).
 
-**Development status:** signing and verification tooling is available. Production
-signing keys and the Android TUF integration are not configured, and no signed
-production catalog has been published. The HTTPS catalog host is provisioned at
-[stellarosappcatalog.stellarsecurity.com](https://stellarosappcatalog.stellarsecurity.com).
+Catalog endpoint: [stellarosappcatalog.stellarsecurity.com](https://stellarosappcatalog.stellarsecurity.com).
 
 ## Documentation
 
 - [Signing a release](docs/OFFLINE-RELEASE.md): prerequisites, key creation, signatures and renewal.
-- [Publishing and client integration](docs/DEPLOYMENT.md): hosting layout and activation requirements.
+- [Publishing and client integration](docs/DEPLOYMENT.md): hosting layout and client verification.
 
 ## How it works
 
@@ -22,7 +19,7 @@ production catalog has been published. The HTTPS catalog host is provisioned at
 4. Publish approved metadata and immutable artifacts. Clients must verify the metadata,
    APK bytes and independently pinned APK signing certificates before installation.
 
-The current signing profile uses three Ed25519 keys and requires two signatures
+The signing profile uses three Ed25519 keys and requires two signatures
 for each TUF role. GitHub Actions prepares candidates and runs tests; it does not
 hold signing keys or approve releases. A valid signature authenticates a release,
 not whether an application is free of malicious behavior.
@@ -52,12 +49,3 @@ python3.12 -m venv .venv &&
 Tests use temporary test keys. Never use those keys for production, commit private
 keys or APK binaries, or put signing passwords in scripts or GitHub secrets.
 
-## Current boundaries
-
-- The CLI supports encrypted Ed25519 key files; hardware-token signing is not implemented.
-- Root initialization supports version 1. A reviewed rotation/recovery procedure is
-  required before production activation.
-- All metadata roles are signed offline. The default timestamp expires after seven
-  days, so releases require regular renewal even when no apps change.
-- Android verification and deployment integration must be qualified before enabling
-  this catalog in Lupin. See the deployment guide for the acceptance criteria.
