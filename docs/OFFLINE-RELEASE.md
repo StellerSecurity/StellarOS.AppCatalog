@@ -67,7 +67,7 @@ mkdir -p "$SIGNING_DIR" &&
   --public custodian-public.json
 ```
 
-The command prompts twice for a password of at least 16 characters and refuses to
+The command prompts twice for a non-empty password and refuses to
 overwrite existing key files. Keep the private key and its secure backup outside
 Git, cloud storage and CI. Store the password separately. Exchange only public JSON
 files, named `alice.json`, `bob.json` and `carol.json`, and independently confirm

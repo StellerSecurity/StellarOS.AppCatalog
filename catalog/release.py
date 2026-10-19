@@ -218,8 +218,8 @@ def main():
         if os.environ.get('CI') or os.environ.get('GITHUB_ACTIONS'):
             p.error('Key generation is forbidden in CI')
         password = getpass.getpass('New offline key password: ').encode()
-        if len(password) < 16 or getpass.getpass('Repeat password: ').encode() != password:
-            p.error('Matching passwords of at least 16 characters are required')
+        if not password or getpass.getpass('Repeat password: ').encode() != password:
+            p.error('Matching non-empty passwords are required')
         private = Ed25519PrivateKey.generate()
         pem = private.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8,
                                     serialization.BestAvailableEncryption(password))
