@@ -29,6 +29,8 @@ class SignReleaseTests(unittest.TestCase):
             with patch('catalog.sign_release.ROOT_PATH', rootpath), patch('catalog.sign_release.require_trusted_root'), patch('catalog.sign_release.verify_candidate') as inspect, patch.dict('os.environ', {}, clear=True):
                 sign(candidate, base/'signed', private, 'policy', 'apksigner', 'aapt2', 1, b'test')
                 inspect.assert_called_once()
+                for role in ('targets', 'snapshot', 'timestamp'):
+                    self.assertEqual(r.load(base/'signed'/f'{role}.json').signed.expires, r.load(rootpath).signed.expires)
                 r.validate_release(rootpath, base/'signed', candidate)
                 with self.assertRaises(ValueError): sign(candidate, base/'signed', private, 'policy', 'apksigner', 'aapt2', 1, b'test')
 

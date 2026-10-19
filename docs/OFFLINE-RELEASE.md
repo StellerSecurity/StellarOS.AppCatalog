@@ -187,8 +187,9 @@ back online for [publication](DEPLOYMENT.md). Never transfer private keys with t
 
 ## Renewal and recovery
 
-Default lifetimes are 365 days for root, 30 days for targets/snapshot, and seven days
-for timestamp. Renew before the earliest expiry, repeating steps 6–7 with increasing
+The recommended `catalog.sign_release` command sets all metadata expiries to the
+approved root expiry: 19 October 2031 for the current trust root. The lower-level
+commands above have independent lifetime options. Renew before expiry with increasing
 versions for targets, snapshot and timestamp even if APKs are unchanged. Never edit
 signed files: later roles authenticate their exact bytes. Expired metadata must cause
 a client error, not an unsigned fallback.
@@ -221,8 +222,10 @@ The command rechecks APK identities, certificates and hashes against the local
 policy, requires the key matching the approved root, and asks for the password
 once. It creates signed targets, snapshot and timestamp metadata. It refuses to
 overwrite an output directory. Increase the release version for every subsequent
-publication. Timestamp validity is 30 days; renew offline before expiry even if
-no app changed. The five-year root expiry is separate.
+publication. All three metadata roles expire with the approved root on
+19 October 2031. No monthly renewal is required. This longer validity also means
+an older signed catalog can remain valid longer on clients that have not seen a
+newer version; signature, hash, certificate and rollback checks still apply.
 
 Transfer only the signed metadata directory back to the publishing machine. The
 private key stays on the signing drive. With the same candidate present:

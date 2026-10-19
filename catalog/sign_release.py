@@ -1,6 +1,5 @@
 """Verify an APK candidate and sign its metadata offline with one encrypted key."""
 import argparse
-from datetime import timedelta
 import getpass
 import os
 from pathlib import Path
@@ -30,15 +29,16 @@ def sign(candidate, output, private, policy, apksigner, aapt2, version, password
     for role in r.ROLES:
         if signer.public_key.keyid not in root.signed.roles[role].keyids:
             raise ValueError('Private key does not match approved root')
+    expires = root.signed.expires
     output.mkdir(parents=True)
-    targets = r.prepare_targets(candidate, version, r.now() + timedelta(days=90))
+    targets = r.prepare_targets(candidate, version, expires)
     targets.sign(signer); r.write(targets, output / 'targets.json')
-    snapshot = r.prepare_snapshot(ROOT_PATH, output / 'targets.json', version, r.now() + timedelta(days=90))
+    snapshot = r.prepare_snapshot(ROOT_PATH, output / 'targets.json', version, expires)
     snapshot.sign(signer); r.write(snapshot, output / 'snapshot.json')
-    timestamp = r.prepare_timestamp(ROOT_PATH, output / 'snapshot.json', version, r.now() + timedelta(days=30))
+    timestamp = r.prepare_timestamp(ROOT_PATH, output / 'snapshot.json', version, expires)
     timestamp.sign(signer); r.write(timestamp, output / 'timestamp.json')
     r.validate_release(ROOT_PATH, output, candidate)
-    print('Verified and signed targets, snapshot and timestamp. Timestamp expires in 30 days.')
+    print(f'Verified and signed targets, snapshot and timestamp. All expire {expires.isoformat()} (approved root expiry).')
 
 
 def main():
