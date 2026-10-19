@@ -64,6 +64,29 @@ class ReleaseTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             r.initialize([self.base / '0.json'] * 2, r.now() + timedelta(days=365))
 
+    def test_single_key_cli_init_and_sign(self):
+        from cryptography.hazmat.primitives import serialization
+        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+        from securesystemslib.signer import SSlibKey
+        private = Ed25519PrivateKey.generate()
+        key = SSlibKey.from_crypto(private.public_key())
+        public_path = self.base / 'cli-public.json'
+        private_path = self.base / 'cli-private.pem'
+        output = self.base / 'cli-root.json'
+        public_path.write_text(json.dumps({'keyid': key.keyid, 'key': key.to_dict()}))
+        private_path.write_bytes(private.private_bytes(
+            serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8,
+            serialization.BestAvailableEncryption(b'test-password')))
+        with patch('sys.argv', ['release', 'init-root', '--public', str(public_path), '--output', str(output)]):
+            r.main()
+        with patch.dict('os.environ', {}, clear=True), patch('getpass.getpass', return_value='test-password'), patch(
+                'sys.argv', ['release', 'sign', str(output), '--private', str(private_path)]):
+            r.main()
+        root = r.load(output)
+        root.signed.verify_delegate('root', root.signed_bytes, root.signatures)
+        self.assertEqual(len(root.signatures), 1)
+        self.assertEqual(root.signed.roles['root'].threshold, 1)
+
     def test_valid_chain_and_export(self):
         self.verify()
         output = self.base / 'export'

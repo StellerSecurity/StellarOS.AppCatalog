@@ -186,7 +186,7 @@ def main():
     k.add_argument('--private', required=True)
     k.add_argument('--public', required=True)
     i = sub.add_parser('init-root')
-    i.add_argument('--public', nargs=3, required=True)
+    i.add_argument('--public', nargs=1, required=True)
     i.add_argument('--output', required=True)
     i.add_argument('--days', type=int, default=365)
     s = sub.add_parser('sign')
