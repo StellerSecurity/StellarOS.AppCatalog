@@ -1,6 +1,9 @@
 name: Prepare unsigned app candidate
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [releases/build-request.json]
 permissions:
   contents: read
 jobs:
