@@ -76,6 +76,14 @@ def sign_file(path, private_path, password):
     write(md, path)
 
 
+def validate_url(url):
+    from urllib.parse import urlsplit
+    parsed = urlsplit(url)
+    if parsed.scheme != 'https' or not parsed.hostname or parsed.username is not None or parsed.password is not None or parsed.fragment or any(ord(c) < 33 for c in url):
+        raise ValueError('Invalid HTTPS APK URL')
+    return url
+
+
 def validate_catalog(data):
     if data.get('schemaVersion') != 1 or not isinstance(data.get('apps'), list) or not data['apps']:
         raise ValueError('Invalid or empty catalog')
@@ -95,6 +103,8 @@ def validate_catalog(data):
             raise ValueError('Invalid file digest')
         if app['target'] != f'apks/{package}/{version}/{digest}.apk':
             raise ValueError('APK path must be immutable and content-addressed')
+        if 'url' in app:
+            validate_url(app['url'])
         pins = app['signerSha256']
         if not pins or len(set(pins)) != len(pins) or any(not re.fullmatch(r'[0-9a-f]{64}', p) for p in pins):
             raise ValueError('Invalid signer fingerprints')

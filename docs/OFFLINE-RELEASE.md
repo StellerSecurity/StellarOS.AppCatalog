@@ -196,3 +196,45 @@ a client error, not an unsigned fallback.
 Use `init-root` only to establish the initial version-1 root. For an established
 catalog, follow a separately reviewed TUF root-rotation and recovery procedure;
 never replace the existing trust anchor with a newly initialized root.
+
+## Sign an application release with the existing key
+
+Use the approved bootstrap root already in `trust/root.json`; do not create a new
+root for each app update. The candidate contains `catalog.json` and the APK files.
+Transfer the reviewed candidate ZIP to the offline signing computer and extract
+it. Prepare Python and Android build-tools for that computer before disconnecting.
+On macOS, use the macOS Android build-tools, not Linux binaries.
+
+From the reviewed repository checkout, with the signing computer offline:
+
+```bash
+.venv/bin/python -m catalog.sign_release \
+  --candidate /path/to/candidate \
+  --output /path/to/signed-release-1 \
+  --private /path/to/removable-drive/catalog-key.pem \
+  --apksigner /path/to/android-build-tools/apksigner \
+  --aapt2 /path/to/android-build-tools/aapt2 \
+  --version 1
+```
+
+The command rechecks APK identities, certificates and hashes against the local
+policy, requires the key matching the approved root, and asks for the password
+once. It creates signed targets, snapshot and timestamp metadata. It refuses to
+overwrite an output directory. Increase the release version for every subsequent
+publication. Timestamp validity is 30 days; renew offline before expiry even if
+no app changed. The five-year root expiry is separate.
+
+Transfer only the signed metadata directory back to the publishing machine. The
+private key stays on the signing drive. With the same candidate present:
+
+```bash
+.venv/bin/python -m catalog.static_site \
+  --root trust/root.json --metadata /path/to/signed-release-1 \
+  --candidate /path/to/candidate --output /path/to/new-site-directory
+```
+
+The static site contains public metadata and the signed catalog. APKs are fetched
+from their signed HTTPS URLs and must still match the exact approved bytes.
+If an upstream URL changes its content, publish a newly verified and signed
+release; clients reject mismatched content. Deploy to the existing Azure Static
+Web App only after this verification succeeds.

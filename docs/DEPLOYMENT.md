@@ -46,7 +46,7 @@ still enforced. Cloud deployment and concurrency behavior require a staging test
 
 Configure clients to enforce the following rules:
 
-1. Use a tested Android-compatible TUF client.
+1. Validate the Android catalog client against the supported metadata profile and on-device tests.
 2. Embed the independently approved public root and minimum metadata versions in the OS.
 3. Persist trusted metadata atomically; enforce expiration, rollback protection,
    sequential root rotation and bounded downloads.
