@@ -23,11 +23,36 @@ jobs:
           python -m catalog.candidate --apks incoming --output candidate \
             --apksigner "$ANDROID_HOME/build-tools/36.0.0/apksigner" \
             --aapt2 "$ANDROID_HOME/build-tools/36.0.0/aapt2"
+      - name: Package signing kit
+        run: python -m catalog.package_candidate
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: unsigned-candidate
-          path: |
-            candidate/
-            incoming/download-receipt.json
+          name: signing-kit
+          path: downloads/
+          compression-level: 0
           retention-days: 7
-# No signing or automatic publication. Review candidate against previous release offline.
+  publish-download:
+    needs: candidate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: signing-kit
+          path: downloads
+      - name: Publish unsigned signing kit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: catalog-candidate-${{ github.run_id }}-${{ github.run_attempt }}
+          RELEASE_COMMIT: ${{ github.sha }}
+        run: |
+          cd downloads
+          sha256sum -c SHA256SUMS
+          gh release create "$RELEASE_TAG" --target "$RELEASE_COMMIT" --prerelease \
+            --title "App catalog signing kit" \
+            --notes-file SIGNING.txt \
+            StellarOS-AppCatalog-signing-kit.zip SHA256SUMS SIGNING.txt
+# Only unsigned candidates are published here. Production signing stays offline.
