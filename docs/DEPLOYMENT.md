@@ -26,13 +26,12 @@ release. This command targets Azure Blob Storage.
 With Azure CLI authenticated and the reviewed root stored at `trust/root.json`:
 
 ```bash
-export ROOT_SHA256='<independently verified SHA-256 of trust/root.json>'
 .venv/bin/python -m catalog.publish \
   --root trust/root.json --metadata metadata --candidate candidate \
   --account ACCOUNT --container CONTAINER
 ```
 
-Replace the hash, account and container placeholders. Grant the publisher only the
+Replace the account and container placeholders. The approved bootstrap root is pinned in catalog/trust.py; ROOT_SHA256, if supplied, must match that pin. Grant the publisher only the
 necessary container-scoped permissions. For CI, use repository/environment-scoped
 OIDC, protected workflow changes and production approval rather than stored account
 keys. Signing remains offline.
@@ -61,3 +60,12 @@ Configure clients to enforce the following rules:
 `catalog.client_check` is a Python reference verifier using the official TUF client.
 It preserves trust state and checks catalog entries against signed target metadata.
 Use it to validate metadata independently of the Android installer.
+
+## Bootstrap root
+
+The approved public bootstrap root is stored in `trust/root.json` and expires on
+2031-10-19. Its exact-byte SHA-256 is
+`5b03c1dcb252c0df6a4d85675986ba9903ea16a7fbd5df66a0d400337b479b95`.
+The publication and reference-client commands verify this pin before use.
+Root rotation requires sequential, authenticated TUF root updates; do not replace
+the bootstrap file with a newly generated root of the same version.

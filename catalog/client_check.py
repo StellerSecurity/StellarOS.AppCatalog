@@ -33,6 +33,8 @@ def main():
     p.add_argument('--state', required=True)
     p.add_argument('--base-url', required=True)
     a = p.parse_args()
+    from catalog.trust import require_trusted_root
+    require_trusted_root(a.root)
     if not a.base_url.startswith('https://'): p.error('HTTPS required')
     data = check(a.root, a.state, a.base_url.rstrip('/') + '/metadata/', a.base_url.rstrip('/') + '/targets/')
     print(f"Verified {len(data['apps'])} catalog entries with the official TUF client")

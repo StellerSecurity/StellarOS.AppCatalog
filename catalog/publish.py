@@ -1,7 +1,7 @@
 """Publish an already offline-signed release to an existing Azure Blob container.
 
-Requires `az login` (OIDC in CI), Storage Blob Data Contributor, a protected
-ROOT_SHA256 environment variable, and a root file approved outside this workflow.
+Requires `az login` (OIDC in CI), Storage Blob Data Contributor, the pinned
+public bootstrap root approved outside this workflow.
 Does not provision Azure resources or perform signing.
 """
 import argparse
@@ -26,8 +26,10 @@ def digest(path):
 
 
 def publish(root_path, metadata, candidate, account, container):
-    expected_root = os.environ.get('ROOT_SHA256', '')
-    if len(expected_root) != 64 or digest(root_path) != expected_root:
+    from catalog.trust import ROOT_SHA256, require_trusted_root
+    require_trusted_root(root_path)
+    expected_root = os.environ.get('ROOT_SHA256', ROOT_SHA256)
+    if expected_root != ROOT_SHA256:
         raise ValueError('Root does not match independently pinned ROOT_SHA256')
     root, roles = r.validate_release(root_path, metadata, candidate)
     common = ['--account-name', account, '--container-name', container, '--auth-mode', 'login']
