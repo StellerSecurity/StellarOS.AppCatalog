@@ -47,7 +47,7 @@ def verify_role(root, role, md):
 
 
 def initialize(public_files, expires):
-    """Three separately held keys; 2-of-3 required for every offline role."""
+    """One offline Ed25519 key signs every metadata role."""
     keys = []
     for path in public_files:
         data = json.loads(Path(path).read_text())
@@ -55,11 +55,11 @@ def initialize(public_files, expires):
         if key.keytype != 'ed25519':
             raise ValueError('Only Ed25519 keys supported by this release profile')
         keys.append(key)
-    if len(keys) != 3 or len({k.keyid for k in keys}) != 3:
-        raise ValueError('Provide three distinct public keys from independent custodians')
+    if len(keys) != 1:
+        raise ValueError('Provide exactly one catalog signing public key')
     root = Root(version=1, expires=expires, consistent_snapshot=True)
     for role in ROLES:
-        root.roles[role].threshold = 2
+        root.roles[role].threshold = 1
         for key in keys:
             root.add_key(key, role)
     return Metadata(root)

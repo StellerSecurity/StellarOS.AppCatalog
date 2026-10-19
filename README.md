@@ -15,11 +15,11 @@ Catalog endpoint: [stellarosappcatalog.stellarsecurity.com](https://stellarosapp
 
 1. Fetch unsigned candidates from the configured upstream release channels.
 2. Inspect each APK's package, version and signing certificate; calculate its exact SHA-256 and length.
-3. Have two independent maintainers review and sign the release offline.
+3. Review and sign the release offline with the catalog signing key.
 4. Publish approved metadata and immutable artifacts. Clients must verify the metadata,
    APK bytes and independently pinned APK signing certificates before installation.
 
-The signing profile uses three Ed25519 keys and requires two signatures
+The signing profile uses one Ed25519 key and requires one signature
 for each TUF role. GitHub Actions prepares candidates and runs tests; it does not
 hold signing keys or approve releases. A valid signature authenticates a release,
 not whether an application is free of malicious behavior.

@@ -16,7 +16,7 @@ class ReleaseTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.base = Path(self.tmp.name)
-        self.keys = [CryptoSigner.generate_ed25519() for _ in range(3)]
+        self.keys = [CryptoSigner.generate_ed25519() for _ in range(1)]
         public = []
         for i, key in enumerate(self.keys):
             path = self.base / f'{i}.json'
@@ -49,11 +49,20 @@ class ReleaseTests(unittest.TestCase):
         r.write(self.timestamp, self.metadata / 'timestamp.json')
 
     def sign(self, md):
-        for key in self.keys[:2]:
+        for key in self.keys:
             md.sign(key, append=True)
 
     def verify(self):
         return r.validate_release(self.rootpath, self.metadata, self.candidate)
+
+    def test_single_key_required_for_each_role(self):
+        for role in r.ROLES:
+            self.assertEqual(self.root.signed.roles[role].threshold, 1)
+            self.assertEqual(self.root.signed.roles[role].keyids, [self.keys[0].public_key.keyid])
+        with self.assertRaises(ValueError):
+            r.initialize([], r.now() + timedelta(days=365))
+        with self.assertRaises(ValueError):
+            r.initialize([self.base / '0.json'] * 2, r.now() + timedelta(days=365))
 
     def test_valid_chain_and_export(self):
         self.verify()
@@ -63,8 +72,8 @@ class ReleaseTests(unittest.TestCase):
         self.assertTrue((output / 'metadata/1.targets.json').exists())
         self.assertEqual(len([p for p in (output / 'targets').rglob('*') if p.is_file()]), 2)
 
-    def test_single_signature_rejected(self):
-        self.targets.signatures.pop(self.keys[1].public_key.keyid)
+    def test_unsigned_metadata_rejected(self):
+        self.targets.signatures.clear()
         r.write(self.targets, self.metadata / 'targets.json')
         with self.assertRaises(Exception): self.verify()
 
