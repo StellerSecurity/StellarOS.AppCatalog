@@ -49,7 +49,7 @@ class RotationTests(unittest.TestCase):
         with self.assertRaises(ValueError): applicable_signers(self.output(current='b', old='a'), ['a'*64])
 
     def test_gaps_and_missing_count(self):
-        for output in [self.output(lo=34), self.output(hi=35), self.output().replace('Number of signers: 1', '')]:
+        for output in [self.output(lo=34), self.output(hi=35), self.output(hi=36), self.output().replace('Number of signers: 1', '')]:
             with self.assertRaises(ValueError): applicable_signers(output, ['a'*64])
 
     def test_multiple_or_ambiguous_signers(self):

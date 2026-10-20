@@ -24,7 +24,7 @@ def applicable_signers(output, allowed):
     if plain and ranged:
         raise ValueError('Ambiguous APK signer output')
     selected = set()
-    for sdk in range(33, 37):
+    for sdk in range(33, 38):
         matches = plain if plain else [digest for lo, hi, digest in ranged if int(lo) <= sdk <= int(hi)]
         if len(matches) != 1 or matches[0].lower() not in allowed:
             raise ValueError('Unexpected APK signer for SDK ' + str(sdk))
@@ -37,7 +37,7 @@ def applicable_signers(output, allowed):
 
 def inspect_apk(apk, policy, apksigner, aapt2):
     result = subprocess.run([apksigner, 'verify', '--verbose', '--print-certs',
-                             '--min-sdk-version', '33', '--max-sdk-version', '36', str(apk)],
+                             '--min-sdk-version', '33', '--max-sdk-version', '37', str(apk)],
                             capture_output=True, text=True, check=True, timeout=120)
     signers = applicable_signers(result.stdout, policy['signerSha256'])
     result = subprocess.run([aapt2, 'dump', 'badging', str(apk)], capture_output=True,
