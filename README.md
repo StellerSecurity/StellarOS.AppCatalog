@@ -15,8 +15,8 @@ Catalog endpoint: [stellarosappcatalog.stellarsecurity.com](https://stellarosapp
 
 1. Fetch unsigned candidates from the configured upstream release channels.
 2. Inspect each APK's package, version and signing certificate; calculate its exact SHA-256 and length.
-3. Review and sign the release offline with the catalog signing key.
-4. Publish approved metadata and immutable artifacts. Clients must verify the metadata,
+3. Preserve those exact APKs as hash-named release assets, then review and sign the catalog offline.
+4. Publish approved metadata. Clients must verify the metadata,
    APK bytes and independently pinned APK signing certificates before installation.
 
 The signing profile uses one Ed25519 key and requires one signature
@@ -31,6 +31,12 @@ and Briar. Release sources are defined in `sources.json`; package identities,
 minimum versions and allowed APK signing certificates are in `apps-policy.json`.
 These policies require independent review before production use. Upstream updates
 become candidates, not automatically approved releases.
+
+Setup installs the versions in the signed catalog from preserved copies. New upstream
+releases do not change those files or interrupt installation. Prepare and sign a new
+catalog only when you choose to approve different versions or download addresses.
+These catalog changes do not require a new OS release for already allowed packages
+and signing certificates. Upstream services can still stop supporting old app versions.
 
 ## Development
 
@@ -48,4 +54,3 @@ python3.12 -m venv .venv &&
 
 Tests use temporary test keys. Never use those keys for production, commit private
 keys or APK binaries, or put signing passwords in scripts or GitHub secrets.
-

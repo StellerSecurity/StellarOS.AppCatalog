@@ -6,10 +6,34 @@ The catalog endpoint is
 [stellarosappcatalog.stellarsecurity.com](https://stellarosappcatalog.stellarsecurity.com).
 The hosting configuration uses Azure Static Web Apps Free with a custom HTTPS domain.
 
-Serve signed metadata and the catalog from the static site. Configure a separate
-HTTPS origin for APK artifacts, using immutable paths matching the signed target
-hashes. Verify the complete download flow and redistribution rights before mirroring
-third-party APKs.
+Serve signed metadata and the catalog from the static site. APKs are preserved as
+GitHub release assets in this repository, separate from the Azure Free metadata site.
+Each collection has a tag derived from its package versions, lengths and hashes;
+every asset name includes the package, version and complete SHA-256. Upstream
+`current` or `latest` URLs are used only to discover new candidates.
+
+The candidate workflow uploads the preserved APKs, downloads and verifies them,
+then publishes the signing kit. It never replaces assets in a published collection.
+Keep referenced collections for as long as signed catalogs use them. Enable
+[GitHub immutable releases](https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases)
+to also prevent asset changes at the hosting layer. Client SHA-256, package and
+certificate checks remain mandatory regardless of hosting settings.
+
+Download links can be changed in a newly offline-signed catalog without an OS update.
+Alternative HTTPS hosts can be used with the same hash-named APK files. Publish and
+verify those exact files before deploying metadata that points to them.
+
+## Preserve an existing approved catalog
+
+Set `releases/build-request.json` to `mode: preserve-approved`, specifying the archived
+signing kit URL and SHA-256 and the existing signed metadata directory. The workflow
+verifies the archived kit, the previous catalog signature chain, all APK hashes and
+their signing certificates. It changes only download addresses, preserving approved
+package versions and bytes. Sign the resulting kit with the next catalog version.
+
+For later app updates, run the candidate workflow manually with `mode: latest`.
+Review and sign only the releases you want to publish. There is no scheduled
+upstream-update requirement and no change to the live catalog before offline signing.
 
 No private signing keys belong in Azure or GitHub. Deployment credentials must only
 permit publishing approved public files. Independently pin the trusted root, verify

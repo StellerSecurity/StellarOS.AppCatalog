@@ -10,6 +10,7 @@ from securesystemslib.signer import CryptoSigner
 from catalog import release as r
 from catalog.candidate import verify_candidate
 from catalog.trust import ROOT_PATH, require_trusted_root
+from catalog.artifacts import require_frozen_urls
 
 
 def sign(candidate, output, private, policy, apksigner, aapt2, version, password):
@@ -20,8 +21,7 @@ def sign(candidate, output, private, policy, apksigner, aapt2, version, password
     candidate, output = Path(candidate), Path(output)
     if output.exists(): raise ValueError('Output already exists; use a new release directory')
     verify_candidate(candidate, policy, apksigner, aapt2)
-    for app in r.validate_catalog(json.loads((candidate / 'catalog.json').read_text()))['apps']:
-        r.validate_url(app['url'])
+    require_frozen_urls(json.loads((candidate / 'catalog.json').read_text()))
     key = serialization.load_pem_private_key(Path(private).read_bytes(), password)
     if not isinstance(key, Ed25519PrivateKey): raise ValueError('Expected encrypted Ed25519 key')
     signer = CryptoSigner(key)

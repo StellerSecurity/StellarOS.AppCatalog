@@ -1,1 +1,8 @@
-{"request":1,"purpose":"Downloadable unsigned offline signing kit"}
+{
+  "request": 2,
+  "mode": "preserve-approved",
+  "purpose": "Preserve the existing approved APK versions at fixed download addresses",
+  "archiveUrl": "https://github.com/StellerSecurity/StellarOS.AppCatalog/releases/download/catalog-candidate-39232911551-1/StellarOS-AppCatalog-signing-kit.zip",
+  "archiveSha256": "6f4c4ec6022cc88054f63b07cf3bb8b632b540fd43f9b0c382b346f2647e3450",
+  "metadata": "releases/v1"
+}

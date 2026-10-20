@@ -244,6 +244,8 @@ def main():
                 p.error('Targets signing requires --candidate, --apksigner and --aapt2 for offline APK inspection')
             from catalog.candidate import verify_candidate
             verify_candidate(args.candidate, args.policy, args.apksigner, args.aapt2)
+            from catalog.artifacts import require_frozen_urls
+            require_frozen_urls(json.loads((Path(args.candidate) / 'catalog.json').read_text()))
             expected = prepare_targets(args.candidate, load(args.metadata).signed.version, load(args.metadata).signed.expires)
             if expected.signed.to_dict() != load(args.metadata).signed.to_dict():
                 p.error('Targets differ from inspected candidate')

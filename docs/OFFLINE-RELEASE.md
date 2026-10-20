@@ -220,7 +220,8 @@ From the reviewed repository checkout, with the signing computer offline:
 
 The command rechecks APK identities, certificates and hashes against the local
 policy, requires the key matching the approved root, and asks for the password
-once. It creates signed targets, snapshot and timestamp metadata. It refuses to
+once. It requires hash-named preserved download addresses and rejects upstream
+`latest` or `current` addresses. It creates signed targets, snapshot and timestamp metadata. It refuses to
 overwrite an output directory. Increase the release version for every subsequent
 publication. All three metadata roles expire with the approved root on
 19 October 2031. No monthly renewal is required. This longer validity also means
@@ -237,7 +238,14 @@ private key stays on the signing drive. With the same candidate present:
 ```
 
 The static site contains public metadata and the signed catalog. APKs are fetched
-from their signed HTTPS URLs and must still match the exact approved bytes.
-If an upstream URL changes its content, publish a newly verified and signed
-release; clients reject mismatched content. Deploy to the existing Azure Static
-Web App only after this verification succeeds.
+from their signed HTTPS addresses on the preserved artifact host and must still
+match the exact approved bytes. The candidate workflow publishes and verifies those
+APKs before releasing the signing kit. Upstream app updates do not change the
+approved downloads. Keep those copies available; sign a new catalog only when
+approving different versions or download addresses. Neither change requires an OS
+release for packages and signing certificates already allowed by the OS.
+
+Migrating a catalog that previously pointed to upstream URLs requires a one-time
+new catalog signature. Use the preservation workflow to retain all existing APK
+versions and bytes, then sign with a higher catalog version. Deploy to the existing
+Azure Static Web App after verification succeeds. Do not overwrite old signed metadata.

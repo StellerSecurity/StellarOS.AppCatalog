@@ -59,8 +59,6 @@ def build(policy_file, apks, output, apksigner, aapt2, previous=None):
     old = {} if previous is None else {a['packageName']: a for a in json.loads(Path(previous).read_text())['apps']}
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
-    receipts = Path(apks) / "download-receipt.json"
-    urls = {} if not receipts.exists() else {r["packageName"]: r["sourceUrl"] for r in json.loads(receipts.read_text())}
     entries = []
     for app in policy:
         apk = Path(apks) / (app['packageName'] + '.apk')
@@ -72,11 +70,10 @@ def build(policy_file, apks, output, apksigner, aapt2, previous=None):
         target = output / entry['target']
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(apk, target)
-        if app["packageName"] in urls:
-            from catalog.release import validate_url
-            entry["url"] = validate_url(urls[app["packageName"]])
         entries.append(entry)
-    (output / 'catalog.json').write_text(json.dumps({'schemaVersion': 1, 'apps': entries}, indent=2) + '\n')
+    from catalog.artifacts import assign_urls
+    catalog = assign_urls({'schemaVersion': 1, 'apps': entries})
+    (output / 'catalog.json').write_text(json.dumps(catalog, indent=2) + '\n')
 
 
 def main():
