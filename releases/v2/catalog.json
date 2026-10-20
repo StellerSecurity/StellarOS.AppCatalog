@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "apps": [
+    {
+      "packageName": "com.whatsapp",
+      "versionCode": 264107133,
+      "length": 154517929,
+      "sha256": "0692e8d09c767bf74240492a217479489db6ecadbad19690ddf9da80cd9526f3",
+      "signerSha256": [
+        "fb920d381bee1b2093f27dc8f13d994da629dc91887d0529b35c9a2dc4f4a6c2"
+      ],
+      "target": "apks/com.whatsapp/264107133/0692e8d09c767bf74240492a217479489db6ecadbad19690ddf9da80cd9526f3.apk",
+      "url": "https://github.com/StellerSecurity/StellarOS.AppCatalog/releases/download/catalog-apks-cf4520251d58a615be7d7b9e42587e39235cb7cfac17e2cb1b536256ba2e4c7f/com.whatsapp-264107133-0692e8d09c767bf74240492a217479489db6ecadbad19690ddf9da80cd9526f3.apk"
+    },
+    {
+      "packageName": "org.thoughtcrime.securesms",
+      "versionCode": 176601,
+      "length": 114794220,
+      "sha256": "c3e51db54b2af9f4a8a2d0ce3b469ef67d56a13a433208325bcb981e1ca3a536",
+      "signerSha256": [
+        "4be4f6cd5be844083e900279dc822af65a547fecc26aba7ff1f5203a45518cd8"
+      ],
+      "target": "apks/org.thoughtcrime.securesms/176601/c3e51db54b2af9f4a8a2d0ce3b469ef67d56a13a433208325bcb981e1ca3a536.apk",
+      "url": "https://github.com/StellerSecurity/StellarOS.AppCatalog/releases/download/catalog-apks-cf4520251d58a615be7d7b9e42587e39235cb7cfac17e2cb1b536256ba2e4c7f/org.thoughtcrime.securesms-176601-c3e51db54b2af9f4a8a2d0ce3b469ef67d56a13a433208325bcb981e1ca3a536.apk"
+    },
+    {
+      "packageName": "im.molly.app",
+      "versionCode": 171904,
+      "length": 96755948,
+      "sha256": "f1c6fd929f9047809a7a9bb4e663d1ec1ec4d9f33d9794799c8e2f8e1663ec11",
+      "signerSha256": [
+        "6aa80fdf4a8cc13737cfb434fc0cde486f09cf8fcda21a67bea5ee1ca2700886"
+      ],
+      "target": "apks/im.molly.app/171904/f1c6fd929f9047809a7a9bb4e663d1ec1ec4d9f33d9794799c8e2f8e1663ec11.apk",
+      "url": "https://github.com/StellerSecurity/StellarOS.AppCatalog/releases/download/catalog-apks-cf4520251d58a615be7d7b9e42587e39235cb7cfac17e2cb1b536256ba2e4c7f/im.molly.app-171904-f1c6fd929f9047809a7a9bb4e663d1ec1ec4d9f33d9794799c8e2f8e1663ec11.apk"
+    },
+    {
+      "packageName": "network.loki.messenger",
+      "versionCode": 4555,
+      "length": 125015926,
+      "sha256": "0da67765e9aef9dd8762b9eb2f84f414bb5224685de9c221f0b0d3a04ca590f8",
+      "signerSha256": [
+        "f2a0ecf70686447d1d6c6cbbf58c42890500ccf41af372ae2099303980824edd"
+      ],
+      "target": "apks/network.loki.messenger/4555/0da67765e9aef9dd8762b9eb2f84f414bb5224685de9c221f0b0d3a04ca590f8.apk",
+      "url": "https://github.com/StellerSecurity/StellarOS.AppCatalog/releases/download/catalog-apks-cf4520251d58a615be7d7b9e42587e39235cb7cfac17e2cb1b536256ba2e4c7f/network.loki.messenger-4555-0da67765e9aef9dd8762b9eb2f84f414bb5224685de9c221f0b0d3a04ca590f8.apk"
+    },
+    {
+      "packageName": "chat.simplex.app",
+      "versionCode": 381,
+      "length": 87519748,
+      "sha256": "d535e5a8986d4e11b9abd5656a3c0e1be5a08e06b00a7b20d6b7587ed0c3457f",
+      "signerSha256": [
+        "3c52c4fd3cad1c07c9b00a7080e358fab9fefcb8af5aec147765f16d0f21ad85"
+      ],
+      "target": "apks/chat.simplex.app/381/d535e5a8986d4e11b9abd5656a3c0e1be5a08e06b00a7b20d6b7587ed0c3457f.apk",
+      "url": "https://github.com/StellerSecurity/StellarOS.AppCatalog/releases/download/catalog-apks-cf4520251d58a615be7d7b9e42587e39235cb7cfac17e2cb1b536256ba2e4c7f/chat.simplex.app-381-d535e5a8986d4e11b9abd5656a3c0e1be5a08e06b00a7b20d6b7587ed0c3457f.apk"
+    },
+    {
+      "packageName": "org.fdroid.basic",
+      "versionCode": 2000052,
+      "length": 8753583,
+      "sha256": "bbc4a34a7f65b200f9e40c4c74af4745de5cdbff45752ac0172916deb9f3c97d",
+      "signerSha256": [
+        "ef7f822b7653e2011cb8c5a7fc99e8d2ade1717e539ca56d6456295e3bc07312"
+      ],
+      "target": "apks/org.fdroid.basic/2000052/bbc4a34a7f65b200f9e40c4c74af4745de5cdbff45752ac0172916deb9f3c97d.apk",
+      "url": "https://github.com/StellerSecurity/StellarOS.AppCatalog/releases/download/catalog-apks-cf4520251d58a615be7d7b9e42587e39235cb7cfac17e2cb1b536256ba2e4c7f/org.fdroid.basic-2000052-bbc4a34a7f65b200f9e40c4c74af4745de5cdbff45752ac0172916deb9f3c97d.apk"
+    },
+    {
+      "packageName": "com.aurora.store",
+      "versionCode": 76,
+      "length": 9362660,
+      "sha256": "8a1ed9aa09631290da91cb793e0517b0f20dc70239ac94ae6682cd94f91a4bad",
+      "signerSha256": [
+        "4c626157ad02bda3401a7263555f68a79663fc3e13a4d4369a12570941aa280f"
+      ],
+      "target": "apks/com.aurora.store/76/8a1ed9aa09631290da91cb793e0517b0f20dc70239ac94ae6682cd94f91a4bad.apk",
+      "url": "https://github.com/StellerSecurity/StellarOS.AppCatalog/releases/download/catalog-apks-cf4520251d58a615be7d7b9e42587e39235cb7cfac17e2cb1b536256ba2e4c7f/com.aurora.store-76-8a1ed9aa09631290da91cb793e0517b0f20dc70239ac94ae6682cd94f91a4bad.apk"
+    },
+    {
+      "packageName": "ch.threema.app.libre",
+      "versionCode": 1216,
+      "length": 73982466,
+      "sha256": "7b1eb7aea02380d5c8213b9ec02b05620d260daf9e5a6810376ec9b3433f7903",
+      "signerSha256": [
+        "0508b53ff102b538919c834e9e6b6afba046edf67e17ca4d1ce7a4b9c3823741"
+      ],
+      "target": "apks/ch.threema.app.libre/1216/7b1eb7aea02380d5c8213b9ec02b05620d260daf9e5a6810376ec9b3433f7903.apk",
+      "url": "https://github.com/StellerSecurity/StellarOS.AppCatalog/releases/download/catalog-apks-cf4520251d58a615be7d7b9e42587e39235cb7cfac17e2cb1b536256ba2e4c7f/ch.threema.app.libre-1216-7b1eb7aea02380d5c8213b9ec02b05620d260daf9e5a6810376ec9b3433f7903.apk"
+    },
+    {
+      "packageName": "org.briarproject.briar.android",
+      "versionCode": 10522,
+      "length": 50648430,
+      "sha256": "7dfd9ab3a76fc690dcc5097fa5086ad1ebc7c9d748031a827bc54555c4181649",
+      "signerSha256": [
+        "501ddf14a6ecf904fb20285c56a565cb987a867f91572ee33c2d43771cca4e37"
+      ],
+      "target": "apks/org.briarproject.briar.android/10522/7dfd9ab3a76fc690dcc5097fa5086ad1ebc7c9d748031a827bc54555c4181649.apk",
+      "url": "https://github.com/StellerSecurity/StellarOS.AppCatalog/releases/download/catalog-apks-cf4520251d58a615be7d7b9e42587e39235cb7cfac17e2cb1b536256ba2e4c7f/org.briarproject.briar.android-10522-7dfd9ab3a76fc690dcc5097fa5086ad1ebc7c9d748031a827bc54555c4181649.apk"
+    }
+  ]
+}
