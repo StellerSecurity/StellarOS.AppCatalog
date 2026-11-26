@@ -46,6 +46,7 @@ jobs:
         if: steps.mode.outputs.value == 'latest'
         run: |
           python -m catalog.candidate --apks incoming --output candidate \
+            --previous releases/v2/catalog.json \
             --apksigner "$ANDROID_HOME/build-tools/36.0.0/apksigner" \
             --aapt2 "$ANDROID_HOME/build-tools/36.0.0/aapt2"
       - name: Preserve APKs from the previously signed catalog
